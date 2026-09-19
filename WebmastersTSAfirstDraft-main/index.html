@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS AI | High School Artificial Intelligence Learning Academy</title>
+    <meta name="description" content="An interactive AI learning portal for high school students demystifying foundational machine learning, practical prompt engineering, and algorithmic ethics.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ================= TOP APP BAR & PERSISTENT NAVIGATION ================= -->
+<header class="app-header">
+    <div class="header-brand">
+        <div class="brand-crest">N</div>
+        <div class="brand-text">
+            <strong>NEXUS AI</strong>
+            <small>ACADEMIC PORTAL</small>
+        </div>
+    </div>
+
+    <!-- MAIN APP NAVIGATION TABS -->
+    <nav class="app-nav" id="appNav" role="tablist" aria-label="Portal Navigation">
+        <button class="nav-tab active" onclick="switchTab('tab-home', this)" role="tab" aria-selected="true">🏠 Overview</button>
+        <button class="nav-tab" onclick="switchTab('tab-modules', this)" role="tab" aria-selected="false">📚 Curriculum</button>
+        <button class="nav-tab" onclick="switchTab('tab-diagrams', this)" role="tab" aria-selected="false">🔬 Visual Schematics</button>
+        <button class="nav-tab" onclick="switchTab('tab-labs', this)" role="tab" aria-selected="false">⚡ Sandboxes</button>
+        <button class="nav-tab" onclick="switchTab('tab-dashboard', this)" role="tab" aria-selected="false">📊 Scholar Hub</button>
+        <button class="nav-tab" onclick="switchTab('tab-references', this)" role="tab" aria-selected="false">⚖️ TSA References</button>
+    </nav>
+
+    <!-- JUDGE & USER CONTROLS (RULE C COMPLIANT: NO LOGIN REQUIRED) -->
+    <div class="header-hud">
+        <button class="hud-btn" id="soundBtn" onclick="toggleAudio()" title="Toggle Synthesized Web Audio">🔊 SFX ON</button>
+        <button class="hud-btn highlight" onclick="quickJudgeUnlock()" title="Instant unlock of all modules for TSA judging review">⚡ Unlock All</button>
+        <button class="hud-btn" onclick="resetDemoState()" title="Reset local player state back to Level 1">🔄 Reset</button>
+        <div class="hud-counter">
+            <span class="hud-sub">LVL</span> <strong id="hudLevel">1</strong>
+            <div class="hud-sep"></div>
+            <span class="hud-sub">XP</span> <strong id="hudXP">0</strong>
+        </div>
+    </div>
+</header>
+
+<!-- ================= MAIN APP VIEWPORT ================= -->
+<main class="main-container">
+
+    <!-- ================= TAB 1: OVERVIEW ================= -->
+    <section id="tab-home" class="tab-panel active" role="tabpanel">
+        <div class="hero-grid">
+            <div class="hero-content">
+                <span class="badge-pill">HIGH SCHOOL AI LITERACY INITIATIVE</span>
+                <h1>Artificial Intelligence,<br><span>Decoded & Demystified.</span></h1>
+                <p>
+                    Engineered specifically for grades 9–12. Demystify machine learning from the inside out: explore multi-head self-attention, engineer resilient academic prompts using the C.R.A.F.T. standard, audit algorithmic bias via disparate impact math, and earn verifiable credentials.
+                </p>
+                <div class="action-row">
+                    <button class="btn-primary" onclick="switchTab('tab-modules', document.querySelectorAll('.nav-tab')[1])">Launch Curriculum →</button>
+                    <button class="btn-secondary" onclick="switchTab('tab-diagrams', document.querySelectorAll('.nav-tab')[2])">Inspect Schematics</button>
+                    <button class="btn-secondary" onclick="switchTab('tab-labs', document.querySelectorAll('.nav-tab')[3])">Open Sandboxes</button>
+                </div>
+            </div>
+
+            <!-- LIVE INFERENCE PROPAGATION SIMULATION -->
+            <div class="hero-visual card">
+                <div class="card-status-bar">
+                    <span>FEED-FORWARD INFERENCE ENGINE</span>
+                    <span class="live-dot" title="Active"></span>
+                </div>
+                <canvas id="neuralCanvas" width="400" height="220" aria-label="Interactive neural network forward propagation simulation"></canvas>
+                <div class="canvas-action-bar">
+                    <button class="btn-xs" onclick="triggerActivationPulse()">Simulate Forward Propagation</button>
+                    <small id="pulseStatus">Click to propagate activation vectors through hidden layers</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRI-PILLAR SUMMARY CARDS -->
+        <div class="feature-trio">
+            <div class="card interactive-card" onclick="switchTab('tab-modules', document.querySelectorAll('.nav-tab')[1])">
+                <div class="card-icon">🧠</div>
+                <h3>1. Foundational Theory</h3>
+                <p>Deconstruct multi-head attention, loss functions, token embeddings, and gradient descent backpropagation.</p>
+                <span class="card-link">Enter The Engine Room →</span>
+            </div>
+            <div class="card interactive-card" onclick="switchTab('tab-modules', document.querySelectorAll('.nav-tab')[1])">
+                <div class="card-icon">⚙️</div>
+                <h3>2. Practical Academic Tools</h3>
+                <p>Learn structured Socratic prompt engineering with the C.R.A.F.T. framework and mitigate synthetic hallucinations.</p>
+                <span class="card-link">Enter The Co-Pilot Bench →</span>
+            </div>
+            <div class="card interactive-card" onclick="switchTab('tab-modules', document.querySelectorAll('.nav-tab')[1])">
+                <div class="card-icon">⚖️</div>
+                <h3>3. Ethics & Integrity</h3>
+                <p>Evaluate disparate impact ratios, data poisoning, student privacy laws (FERPA), and the honor code spectrum.</p>
+                <span class="card-link">Enter The Ethical Compass →</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= TAB 2: IN-DEPTH CURRICULUM ================= -->
+    <section id="tab-modules" class="tab-panel" role="tabpanel">
+        <div class="panel-header">
+            <span class="badge-pill">RIGOROUS ACADEMIC STANDARDS</span>
+            <h2>Educational Coursework & Application Benches</h2>
+            <p>Each module delivers thorough technical instruction followed by multi-question scenario application exams designed to test deep conceptual understanding.</p>
+        </div>
+
+        <div class="modules-stack">
+            <!-- MODULE 1 -->
+            <article class="card module-card">
+                <div class="module-meta">
+                    <span class="meta-tag">MODULE 01 • MACHINE LEARNING FOUNDATIONS</span>
+                    <span class="xp-val">+250 XP</span>
+                </div>
+                <h3>The Engine Room: Machine Learning & Transformer Architecture</h3>
+                <p class="module-overview">
+                    Move beyond simple definitions. Understand how computers transform natural language into mathematical arrays, adjust synaptic weights, and compute predictions.
+                </p>
+
+                <div class="module-details">
+                    <h4>Core Mechanical Foundations:</h4>
+                    <ul>
+                        <li><strong>Feed-Forward vs. Transformers:</strong> Traditional Recurrent Neural Networks (RNNs) processed language sequentially, word by word. This caused mathematical "vanishing gradients" where early sentence context was forgotten. Transformers process all tokens in parallel using <em>Multi-Head Self-Attention</em>, calculating dot-product similarity across all words simultaneously.</li>
+                        <li><strong>Loss Functions & Backpropagation:</strong> A neural network initializes with randomized weights. When it predicts the wrong token, a <em>Loss Function</em> (e.g., Categorical Cross-Entropy) calculates the mathematical error. Backpropagation calculates the partial derivative of this error with respect to every weight using the calculus Chain Rule, nudging weights along the negative gradient.</li>
+                        <li><strong>Vector Embeddings:</strong> Words are transformed into high-dimensional vectors ($512$ to $4,096$ dimensions). High-dimensional geometric proximity models semantic similarity—allowing models to compute linguistic relationships algebraically: $\vec{v}_{\text{King}} - \vec{v}_{\text{Man}} + \vec{v}_{\text{Woman}} \approx \vec{v}_{\text{Queen}}$.</li>
+                    </ul>
+                </div>
+
+                <div class="module-footer">
+                    <button class="btn-primary" onclick="openGame('foundation')" id="btnQuizFoundation">Launch Module 1 Application Exam (5 Scenarios) →</button>
+                    <span class="status-indicator" id="statusFoundation">Incomplete (0/5 Passed)</span>
+                </div>
+            </article>
+
+            <!-- MODULE 2 -->
+            <article class="card module-card">
+                <div class="module-meta">
+                    <span class="meta-tag">MODULE 02 • APPLIED TOOLS & METHODOLOGIES</span>
+                    <span class="xp-val">+250 XP</span>
+                </div>
+                <h3>The Academic Co-Pilot: Practical Tools & Prompt Calibration</h3>
+                <p class="module-overview">
+                    Learn to treat generative AI not as an authoritative factual database or a ghostwriter, but as a calibrated cognitive amplifier for research and critique.
+                </p>
+
+                <div class="module-details">
+                    <h4>The C.R.A.F.T. Prompt Engineering Framework:</h4>
+                    <ul>
+                        <li><strong>Context (C):</strong> Provide the historical, scientific, or literary background. Constrain the scope to prevent irrelevant drift.</li>
+                        <li><strong>Role (R):</strong> Assign an explicit professional persona (e.g., <em>"Act as an AP Environmental Science research evaluator..."</em>) to force specialized vocabulary and reasoning.</li>
+                        <li><strong>Action (A):</strong> Command explicit cognitive tasks (e.g., <em>"Contrast," "Critique line of reasoning," "Isolate logical fallacies"</em>) rather than generic prompts like "write about."</li>
+                        <li><strong>Format (F):</strong> Specify structural output requirements (e.g., comparative Markdown tables, JSON arrays, numbered proofs).</li>
+                        <li><strong>Target Audience (T):</strong> Calibrate the technical depth and comprehension level (e.g., <em>"Tailor explanation for a 10th-grade peer reviewer"</em>).</li>
+                    </ul>
+                    <h4>Mitigating Stochastic Hallucinations:</h4>
+                    <p>
+                        Large Language Models are probabilistic next-token predictors, not knowledge engines. They generate text that statistically sounds authentic, frequently inventing non-existent academic papers, author names, and DOIs. Scholars must maintain rigorous verification protocols by validating claims through primary indexes like PubMed, JSTOR, and Google Scholar.
+                    </p>
+                </div>
+
+                <div class="module-footer">
+                    <button class="btn-primary" onclick="openGame('tools')" id="btnQuizTools">Launch Module 2 Application Exam (5 Scenarios) →</button>
+                    <span class="status-indicator" id="statusTools">Incomplete (0/5 Passed)</span>
+                </div>
+            </article>
+
+            <!-- MODULE 3 -->
+            <article class="card module-card">
+                <div class="module-meta">
+                    <span class="meta-tag">MODULE 03 • ETHICAL GOVERNANCE & INTEGRITY</span>
+                    <span class="xp-val">+250 XP</span>
+                </div>
+                <h3>The Ethical Compass: Algorithmic Bias, Privacy, & Honor Codes</h3>
+                <p class="module-overview">
+                    Evaluate the statistical roots of algorithmic discrimination, statutory privacy mandates, and the boundary between permissible assistance and academic plagiarism.
+                </p>
+
+                <div class="module-details">
+                    <h4>Algorithmic Disparity & Statutory Protections:</h4>
+                    <ul>
+                        <li><strong>Training Corpus Representation Skew:</strong> Algorithms do not possess moral animus; they extract empirical patterns from historical training text. When training data contains cultural imbalances or underrepresents demographic groups, the model's confidence distribution flattens, resulting in elevated false rejection rates for those groups.</li>
+                        <li><strong>The Four-Fifths Rule (Disparate Impact):</strong> Under federal compliance guidelines (EEOC Uniform Guidelines), an automated selection process has adverse disparate impact if the selection rate for a protected demographic is less than $80\%$ ($\frac{4}{5}$) of the selection rate of the highest-scoring cohort.</li>
+                        <li><strong>Institutional Data Privacy (FERPA):</strong> Commercial public AI endpoints frequently log user prompt submissions for downstream fine-tuning. Inputting student PII (Personally Identifiable Information), disciplinary records, or unredacted work into public chats violates federal FERPA safeguards.</li>
+                    </ul>
+                </div>
+
+                <div class="module-footer">
+                    <button class="btn-primary" onclick="openGame('ethics')" id="btnQuizEthics">Launch Module 3 Application Exam (5 Scenarios) →</button>
+                    <span class="status-indicator" id="statusEthics">Incomplete (0/5 Passed)</span>
+                </div>
+            </article>
+
+            <!-- CAPSTONE MISSION -->
+            <article class="card module-card capstone-border">
+                <div class="module-meta">
+                    <span class="meta-tag">MODULE 04 • SYNTHESIS CAPSTONE</span>
+                    <span class="xp-val">+250 XP</span>
+                </div>
+                <h3>Synthesis Capstone: Chief High School AI Systems Auditor</h3>
+                <p class="module-overview">
+                    Integrate all conceptual pillars in an advanced diagnostic scenario. Act as the district technology auditor evaluating a predictive academic forecasting model.
+                </p>
+                <div class="module-details">
+                    <p>
+                        A software vendor proposes deploying an automated drop-out risk prediction model in your high school district. Audit the underlying data pipeline, address disparate impact violations, secure student privacy boundaries, and configure mandatory human-in-the-loop governance.
+                    </p>
+                </div>
+                <div class="module-footer">
+                    <button class="btn-primary" onclick="openGame('mission')" id="btnQuizMission">Launch Capstone Audit Exam (5 Scenarios) →</button>
+                    <span class="status-indicator" id="statusMission">Locked (Complete Modules 1–3)</span>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- ================= TAB 3: HOVER GRAPHICS ================= -->
+    <section id="tab-diagrams" class="tab-panel" role="tabpanel">
+        <div class="panel-header">
+            <span class="badge-pill">INTERACTIVE GRAPHICAL SCHEMATICS</span>
+            <h2>Visual Architecture & Integrity Inspect-O-Meter</h2>
+            <p>Hover over or click any node in the SVG schematics below to inspect mathematical operations, tensor flows, and ethical thresholds in real time.</p>
+        </div>
+
+        <div class="diagram-grid">
+            <!-- DIAGRAM 1: TRANSFORMER ARCHITECTURE -->
+            <div class="card diagram-card">
+                <div class="diagram-info">
+                    <span class="meta-tag">SCHEMATIC 01 • HOVER OR CLICK TO INSPECT</span>
+                    <h3>Transformer Architecture Pipeline</h3>
+                    <p>Detailed breakdown based on <em>Attention Is All You Need</em> (Vaswani et al., 2017)[span_23](start_span)[span_23](end_span).</p>
+                </div>
+
+                <div class="diagram-stage">
+                    <div class="svg-container">
+                        <svg viewBox="0 0 340 430" class="vector-svg" id="transformerSvg" aria-label="Transformer diagram">
+                            <!-- NODE 1: EMBEDDINGS -->
+                            <g class="svg-interactive-node" onmouseenter="inspectNode('embed')" onclick="inspectNode('embed')" tabindex="0" role="button" aria-label="Inspect Embeddings">
+                                <rect x="30" y="360" width="280" height="45" rx="8" class="svg-box"/>
+                                <text x="170" y="388" class="svg-txt">1. Input & Positional Embeddings</text>
+                            </g>
+                            <!-- CONNECTOR -->
+                            <line x1="170" y1="360" x2="170" y2="325" class="svg-wire"/>
+                            <!-- NODE 2: MHA -->
+                            <g class="svg-interactive-node" onmouseenter="inspectNode('mha')" onclick="inspectNode('mha')" tabindex="0" role="button" aria-label="Inspect Multi-Head Attention">
+                                <rect x="30" y="275" width="280" height="50" rx="8" class="svg-box highlight"/>
+                                <text x="170" y="305" class="svg-txt">2. Multi-Head Self-Attention (Q, K, V)</text>
+                            </g>
+                            <!-- CONNECTOR -->
+                            <line x1="170" y1="275" x2="170" y2="240" class="svg-wire"/>
+                            <!-- NODE 3: NORM1 -->
+                            <g class="svg-interactive-node" onmouseenter="inspectNode('norm1')" onclick="inspectNode('norm1')" tabindex="0" role="button" aria-label="Inspect Layer Normalization">
+                                <rect x="30" y="195" width="280" height="45" rx="8" class="svg-box"/>
+                                <text x="170" y="223" class="svg-txt">3. Residual Add & Layer Normalization</text>
+                            </g>
+                            <!-- CONNECTOR -->
+                            <line x1="170" y1="195" x2="170" y2="160" class="svg-wire"/>
+                            <!-- NODE 4: FFN -->
+                            <g class="svg-interactive-node" onmouseenter="inspectNode('ffn')" onclick="inspectNode('ffn')" tabindex="0" role="button" aria-label="Inspect Feed-Forward Network">
+                                <rect x="30" y="110" width="280" height="50" rx="8" class="svg-box"/>
+                                <text x="170" y="140" class="svg-txt">4. Feed-Forward Neural Network (GELU)</text>
+                            </g>
+                            <!-- CONNECTOR -->
+                            <line x1="170" y1="110" x2="170" y2="75" class="svg-wire"/>
+                            <!-- NODE 5: SOFTMAX -->
+                            <g class="svg-interactive-node" onmouseenter="inspectNode('softmax')" onclick="inspectNode('softmax')" tabindex="0" role="button" aria-label="Inspect Softmax Logits">
+                                <rect x="30" y="25" width="280" height="50" rx="8" class="svg-box gold"/>
+                                <text x="170" y="55" class="svg-txt">5. Linear Output & Softmax Logits</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- INSPECTOR HUD -->
+                    <div class="hud-inspector">
+                        <span class="hud-tag">DYNAMIC INSPECTION HUD</span>
+                        <h4 id="hudNodeTitle">Multi-Head Self-Attention</h4>
+                        <div class="hud-math" id="hudNodeMath">Attention(Q,K,V) = softmax((Q*K^T)/sqrt(d_k))*V</div>
+                        <p id="hudNodeDesc">
+                            Projects queries, keys, and values into parallel subspaces. Computes token-to-token compatibility scores to capture context across sentences.
+                        </p>
+                        <div class="tensor-dims">
+                            <div><small>INPUT TENSOR</small><strong id="hudNodeIn">[Batch, Sequence, 512]</strong></div>
+                            <div><small>OUTPUT TENSOR</small><strong id="hudNodeOut">[Batch, Sequence, 512]</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIAGRAM 2: ETHICS SPECTRUM -->
+            <div class="card diagram-card">
+                <div class="diagram-info">
+                    <span class="meta-tag">SCHEMATIC 02 • HOVER OR CLICK TO INSPECT</span>
+                    <h3>The Spectrum of Academic Integrity</h3>
+                    <p>Determine where assistive learning tools end and honor code violations begin.</p>
+                </div>
+
+                <div class="diagram-stage">
+                    <div class="svg-container">
+                        <svg viewBox="0 0 340 380" class="vector-svg" aria-label="Ethics spectrum diagram">
+                            <!-- ZONE 1 -->
+                            <g class="svg-interactive-node" onmouseenter="inspectEthics('socratic')" onclick="inspectEthics('socratic')" tabindex="0" role="button" aria-label="Inspect Zone 1 Socratic Study">
+                                <rect x="20" y="20" width="300" height="70" rx="8" class="ethics-box green"/>
+                                <text x="170" y="50" class="ethics-title-green">ZONE 1: Socratic Study Partner</text>
+                                <text x="170" y="70" class="svg-sub">Concept quizzing, brainstorming analogies</text>
+                            </g>
+                            <!-- ZONE 2 -->
+                            <g class="svg-interactive-node" onmouseenter="inspectEthics('outline')" onclick="inspectEthics('outline')" tabindex="0" role="button" aria-label="Inspect Zone 2 Outlining">
+                                <rect x="20" y="110" width="300" height="70" rx="8" class="ethics-box cyan"/>
+                                <text x="170" y="140" class="ethics-title-cyan">ZONE 2: Structural Outlining</text>
+                                <text x="170" y="160" class="svg-sub">Logical outlines, finding counterarguments</text>
+                            </g>
+                            <!-- ZONE 3 -->
+                            <g class="svg-interactive-node" onmouseenter="inspectEthics('paraphrase')" onclick="inspectEthics('paraphrase')" tabindex="0" role="button" aria-label="Inspect Zone 3 Paraphrasing">
+                                <rect x="20" y="200" width="300" height="70" rx="8" class="ethics-box yellow"/>
+                                <text x="170" y="230" class="ethics-title-yellow">ZONE 3: Heavy Paraphrasing</text>
+                                <text x="170" y="250" class="svg-sub">Spinning text to disguise AI-generated prose</text>
+                            </g>
+                            <!-- ZONE 4 -->
+                            <g class="svg-interactive-node" onmouseenter="inspectEthics('plagiarism')" onclick="inspectEthics('plagiarism')" tabindex="0" role="button" aria-label="Inspect Zone 4 Plagiarism">
+                                <rect x="20" y="290" width="300" height="70" rx="8" class="ethics-box red"/>
+                                <text x="170" y="320" class="ethics-title-red">ZONE 4: Direct Plagiarism</text>
+                                <text x="170" y="340" class="svg-sub">Ghostwriting, submitting raw AI text</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- ETHICS INSPECTOR -->
+                    <div class="hud-inspector">
+                        <span class="hud-tag">HONOR CODE AUDIT</span>
+                        <h4 id="hudEthicsTitle">Zone 1: Socratic Study Partner</h4>
+                        <div class="hud-math" id="hudEthicsStatus">PERMISSIBLE • Full Honor Code Compliance</div>
+                        <p id="hudEthicsDesc">
+                            Using AI as a study partner to ask clarifying questions about difficult material. The student does all original writing and critical thinking.
+                        </p>
+                        <div class="tensor-dims">
+                            <div><small>DISCLOSURE NEEDED</small><strong id="hudEthicsPermit">None Required</strong></div>
+                            <div><small>HONOR VIOLATION RISK</small><strong id="hudEthicsRisk">Zero Risk</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= TAB 4: INTERACTIVE LABS ================= -->
+    <section id="tab-labs" class="tab-panel" role="tabpanel">
+        <div class="panel-header">
+            <span class="badge-pill">EXPERIMENTAL BENCHES</span>
+            <h2>Interactive Diagnostic Laboratories</h2>
+            <p>Hands-on sandboxes demonstrating sub-word tokenization, prompt quality evaluation, and algorithmic training set fairness.</p>
+        </div>
+
+        <div class="labs-grid">
+            <!-- LAB 1: TOKENIZER -->
+            <div class="card lab-card">
+                <div class="lab-head">
+                    <div>
+                        <span class="meta-tag">SANDBOX 01</span>
+                        <h3>Byte-Pair Tokenizer & Vector ID Mapper</h3>
+                    </div>
+                    <span class="badge-chip">Total Tokens: <strong id="tokenCount">0</strong></span>
+                </div>
+                <p>Type below to see how Large Language Models split natural language into sub-word tokens and assign vocabulary integers:</p>
+                <textarea id="tokenizerInput" rows="2" oninput="runTokenizer()" aria-label="Tokenizer Input">Artificial intelligence empowers students to analyze scientific datasets ethically.</textarea>
+                <div class="token-container" id="tokenOutput" aria-live="polite"></div>
+            </div>
+
+            <!-- LAB 2: PROMPT BENCH -->
+            <div class="card lab-card">
+                <div class="lab-head">
+                    <div>
+                        <span class="meta-tag">SANDBOX 02</span>
+                        <h3>C.R.A.F.T. Prompt Engineering Bench</h3>
+                    </div>
+                    <span class="badge-chip">Rigor Score: <strong id="promptScore">0%</strong></span>
+                </div>
+                <p>Test an academic prompt to evaluate whether it contains Context, Role, Action, Format, and a Target Audience:</p>
+                <input type="text" id="userPrompt" oninput="evaluatePrompt()" placeholder="e.g., Act as an AP Biology tutor. Explain mitosis to a 9th grader as a 4-step bullet list." aria-label="Prompt Input">
+                <div class="pill-row">
+                    <span class="indicator-pill" id="pillContext">Context Defined</span>
+                    <span class="indicator-pill" id="pillRole">Role Defined</span>
+                    <span class="indicator-pill" id="pillAction">Action Verb</span>
+                    <span class="indicator-pill" id="pillFormat">Format Structured</span>
+                    <span class="indicator-pill" id="pillAudience">Audience Targeted</span>
+                </div>
+                <div class="feedback-box" id="promptFeedback">Type your prompt above to analyze its structure.</div>
+            </div>
+
+            <!-- LAB 3: FAIRNESS SIMULATOR -->
+            <div class="card lab-card">
+                <div class="lab-head">
+                    <div>
+                        <span class="meta-tag">SANDBOX 03</span>
+                        <h3>Algorithmic Fairness & Disparate Impact Simulator</h3>
+                    </div>
+                    <span class="badge-chip" id="parityBadge">Status: Balanced</span>
+                </div>
+                <p>Adjust the training sample ratio between two student cohorts to observe how demographic imbalances alter classification confidence:</p>
+                <div class="slider-box">
+                    <label>Training Ratio: <strong id="ratioLabel">50% Cohort A / 50% Cohort B</strong></label>
+                    <input type="range" id="fairnessSlider" min="10" max="90" value="50" oninput="simulateFairness()" aria-label="Cohort balance slider">
+                </div>
+                <div class="meter-grid">
+                    <div>
+                        <div class="meter-label"><span>Cohort A Model Confidence</span><strong id="confValA">85%</strong></div>
+                        <div class="meter-track"><div class="meter-fill" id="meterA" style="width: 85%;"></div></div>
+                    </div>
+                    <div>
+                        <div class="meter-label"><span>Cohort B Model Confidence</span><strong id="confValB">85%</strong></div>
+                        <div class="meter-track"><div class="meter-fill" id="meterB" style="width: 85%;"></div></div>
+                    </div>
+                </div>
+                <div class="feedback-box" id="fairnessInsight">Uniform training distribution: model confidence is balanced across both cohorts.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= TAB 5: SCHOLAR DASHBOARD ================= -->
+    <section id="tab-dashboard" class="tab-panel" role="tabpanel">
+        <div class="panel-header">
+            <span class="badge-pill">GAMIFICATION & PROGRESS TRACKING</span>
+            <h2>Scholar Dashboard & Competency Radar</h2>
+            <p>Track experience points, monitor curriculum progress, and view earned achievement credentials saved to local browser cache[span_24](start_span)[span_24](end_span).</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- XP & LEVEL CARD -->
+            <div class="card hud-card">
+                <div class="hud-top">
+                    <div>
+                        <span class="meta-tag">TOTAL MASTERY REPUTATION</span>
+                        <h2><span id="dashXP">0</span> <small>/ 1000 XP</small></h2>
+                    </div>
+                    <div class="level-badge">
+                        <strong id="dashLevel">1</strong>
+                        <small>LEVEL</small>
+                    </div>
+                </div>
+                <div class="meter-track" style="height: 10px; margin-top: 15px;">
+                    <div class="meter-fill" id="dashXPBar" style="width: 0%;"></div>
+                </div>
+                <p class="feedback-box" id="dashMessage" style="margin-top: 15px;">Complete Module 1 application scenarios to begin your AI journey!</p>
+            </div>
+
+            <!-- SKILL RADAR CHART -->
+            <div class="card radar-card">
+                <span class="meta-tag">COMPETENCY RADAR (SVG)</span>
+                <div class="radar-box">
+                    <svg viewBox="0 0 200 200" class="radar-svg" aria-label="Competency radar chart">
+                        <!-- Grid Lines -->
+                        <polygon points="100,20 180,100 100,180 20,100" fill="none" stroke="rgba(255,255,255,0.1)"/>
+                        <polygon points="100,50 150,100 100,150 50,100" fill="none" stroke="rgba(255,255,255,0.1)"/>
+                        <line x1="100" y1="20" x2="100" y2="180" stroke="rgba(255,255,255,0.1)"/>
+                        <line x1="20" y1="100" x2="180" y2="100" stroke="rgba(255,255,255,0.1)"/>
+                        <!-- Dynamic Polygon -->
+                        <polygon id="radarPoly" points="100,100 100,100 100,100 100,100" fill="rgba(53, 217, 255, 0.3)" stroke="#35d9ff" stroke-width="2"/>
+                        <!-- Labels -->
+                        <text x="100" y="14" text-anchor="middle" class="radar-lbl">THEORY</text>
+                        <text x="186" y="103" class="radar-lbl">TOOLS</text>
+                        <text x="100" y="196" text-anchor="middle" class="radar-lbl">ETHICS</text>
+                        <text x="14" y="103" text-anchor="end" class="radar-lbl">CAPSTONE</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- BADGES SHELF -->
+        <h3 style="margin: 30px 0 15px;">Achievement Credentials</h3>
+        <div class="badge-grid">
+            <div class="card badge-card locked" id="badge1">
+                <div class="badge-icon">🧠</div>
+                <strong>Model Architect</strong>
+                <small>Module 1 Verified</small>
+            </div>
+            <div class="card badge-card locked" id="badge2">
+                <div class="badge-icon">⚙️</div>
+                <strong>Prompt Engineer</strong>
+                <small>Module 2 Verified</small>
+            </div>
+            <div class="card badge-card locked" id="badge3">
+                <div class="badge-icon">⚖️</div>
+                <strong>Ethics Auditor</strong>
+                <small>Module 3 Verified</small>
+            </div>
+            <div class="card badge-card locked" id="badge4">
+                <div class="badge-icon">🚀</div>
+                <strong>AI Innovator</strong>
+                <small>Capstone Verified</small>
+            </div>
+        </div>
+
+        <!-- DIPLOMA CALLOUT -->
+        <div id="diplomaBanner" class="card diploma-banner" style="display: none;">
+            <div>
+                <h4>🎓 1,000 XP Complete: AI Scholar Status Earned</h4>
+                <p>All theoretical, practical, and ethical benchmarks are verified.</p>
+            </div>
+            <button class="btn-primary" onclick="openCertificate()">View Verified Diploma</button>
+        </div>
+    </section>
+
+    <!-- ================= TAB 6: TSA REFERENCES ================= -->
+    <section id="tab-references" class="tab-panel" role="tabpanel">
+        <div class="panel-header">
+            <span class="badge-pill">OFFICIAL EVENT COMPLIANCE</span>
+            <h2>References, Citations & TSA Appendices</h2>
+            <p>Designed to meet all National TSA Webmaster preliminary requirements (Reference Page & Copyright Rubric criteria)[span_25](start_span)[span_25](end_span).</p>
+        </div>
+
+        <div class="ref-grid">
+            <!-- 1. TECH STACK DISCLOSURES -->
+            <div class="card">
+                <h3>1. System Architecture & Frameworks (Rule G & H)</h3>
+                <p>
+                    Documenting software technologies used per Rule G[span_26](start_span)[span_26](end_span). <em>Per Rule H, zero proprietary content management systems or site builders (e.g., Wix, Squarespace, Webflow, WordPress) were used[span_27](start_span)[span_27](end_span).</em>
+                </p>
+                <table class="ref-table">
+                    <tr><td><strong>DOM Architecture:</strong></td><td>Semantic HTML5 Single-Page App (SPA) Tab System</td></tr>
+                    <tr><td><strong>Styling & Layout:</strong></td><td>Native CSS3 Custom Properties, CSS Grid, and Flexbox</td></tr>
+                    <tr><td><strong>Graphics Rendering:</strong></td><td>HTML5 2D Canvas (Neural Simulation) & Inline SVG Vectors</td></tr>
+                    <tr><td><strong>Sound Engine:</strong></td><td>W3C Web Audio API (Synthesized in code; zero media files)</td></tr>
+                    <tr><td><strong>Client Storage:</strong></td><td>HTML5 `localStorage` (No login requirements per Rule C)[span_28](start_span)[span_28](end_span)</td></tr>
+                </table>
+            </div>
+
+            <!-- 2. APA CITATIONS -->
+            <div class="card">
+                <h3>2. Scholarly Citations (APA 7th Edition)</h3>
+                <ol class="citation-list">
+                    <li>
+                        <strong>Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I.</strong> (2017).
+                        <em>Attention Is All You Need</em>. Advances in Neural Information Processing Systems, 30, 5998–6008.
+                    </li>
+                    <li>
+                        <strong>Floridi, L., & Cowls, J.</strong> (2022).
+                        <em>A Unified Framework of Five Principles for AI in Society</em>. Harvard Data Science Review, 1(1). https://doi.org/10.1162/99608f92.8cd550d1
+                    </li>
+                    <li>
+                        <strong>Barocas, S., Hardt, M., & Narayanan, A.</strong> (2023).
+                        <em>Fairness and Machine Learning: Limitations and Opportunities</em>. MIT Press.
+                    </li>
+                    <li>
+                        <strong>National Institute of Standards and Technology.</strong> (2023).
+                        <em>Artificial Intelligence Risk Management Framework (AI RMF 1.0)</em>. U.S. Department of Commerce.
+                    </li>
+                </ol>
+            </div>
+
+            <!-- 3. COPYRIGHT CHECKLIST -->
+            <div class="card">
+                <h3>3. Student Copyright Checklist (1 Page Maximum)</h3>
+                <p>
+                    All diagrams, shapes, and icons were created directly with code using inline SVGs, CSS shapes, and Unicode entities[span_29](start_span)[span_29](end_span). No external copyrighted images or audio were used[span_30](start_span)[span_30](end_span).
+                </p>
+                <div class="doc-download-box">
+                    <div>
+                        <strong>Student Copyright Checklist.pdf</strong>
+                        <small>Official TSA Appendix Form • 1 Page Complete[span_31](start_span)[span_31](end_span)</small>
+                    </div>
+                    <a href="copyright-checklist.pdf" download class="btn-secondary">Download PDF</a>
+                </div>
+            </div>
+
+            <!-- 4. RESOURCES AND AI REFLECTION -->
+            <div class="card">
+                <h3>4. Resources & AI Reflection Form (4 Pages Maximum)</h3>
+                <p>
+                    A comprehensive disclosure detailing how generative AI tools were ethically used during wireframe ideation and code validation per national event rules[span_32](start_span)[span_32](end_span).
+                </p>
+                <div class="doc-download-box">
+                    <div>
+                        <strong>Resources and AI Reflection.pdf</strong>
+                        <small>Ethical Decision-Making & Tool Analysis • 4 Pages Complete[span_33](start_span)[span_33](end_span)</small>
+                    </div>
+                    <a href="ai-reflection.pdf" download class="btn-secondary">Download PDF</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- ================= APPLICATION QUIZ MODAL ================= -->
+<div class="modal-backdrop" id="quizModal">
+    <div class="modal-card">
+        <button class="modal-close" onclick="closeGame()" aria-label="Close modal">×</button>
+        <div class="modal-header">
+            <strong id="quizTitle">APPLICATION BENCHMARK EXAM</strong>
+            <small>Scenario <span id="qNum">1</span> / <span id="qTotal">5</span></small>
+        </div>
+        <div class="meter-track" style="height: 4px;"><div class="meter-fill" id="quizProgress"></div></div>
+        <h3 id="quizQuestion" style="margin: 20px 0 15px;">Question</h3>
+        <div id="quizAnswers" class="quiz-answers"></div>
+        <p id="quizFeedback" class="feedback-box" style="margin-top: 15px;"></p>
+        <button id="quizNextBtn" class="btn-primary" style="display: none; margin-top: 15px;" onclick="nextQuestion()">Proceed to Next Scenario →</button>
+    </div>
+</div>
+
+<!-- ================= DIPLOMA MODAL ================= -->
+<div class="modal-backdrop" id="certModal">
+    <div class="modal-card diploma-card">
+        <button class="modal-close" onclick="closeCertificate()" aria-label="Close certificate">×</button>
+        <div class="diploma-frame">
+            <div class="diploma-crest">N</div>
+            <h2>NEXUS ACADEMY OF ARTIFICIAL INTELLIGENCE</h2>
+            <small>NATIONAL HIGH SCHOOL AI MASTERY CREDENTIAL</small>
+            <div class="diploma-sep"></div>
+            <p>This certifies that the scholar has completed all modules in:</p>
+            <h3 style="color: #fff; margin: 10px 0;">Foundational Theory, Prompt Calibration, & Algorithmic Ethics</h3>
+            <p><small id="diplomaDate">Issued: September 2026</small></p>
+            <div class="diploma-signatures">
+                <div><div class="sig-line"></div><small>AI Academic Council</small></div>
+                <div><div class="sig-line"></div><small>Verified Local Credential</small></div>
+            </div>
+            <button class="btn-primary" style="margin-top: 20px;" onclick="window.print()">Print / Save as PDF</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= PERSISTENT FOOTER ================= -->
+<footer class="app-footer">
+    <small>NEXUS AI • Official Technology Student Association (TSA) Webmaster Entry[span_34](start_span)[span_34](end_span)</small>
+    <a href="#tab-references" onclick="switchTab('tab-references', document.querySelectorAll('.nav-tab')[5])">References & Disclosures[span_35](start_span)[span_35](end_span)</a>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
