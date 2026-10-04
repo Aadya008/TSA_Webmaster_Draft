@@ -1,712 +1,569 @@
 /* =====================================================
-   NEXUS AI CLIENT ENGINE
-   Engineered for the National TSA Webmaster Event
+   NEXUS AI - CLEAN INTERMEDIATE CLIENT RUNTIME
+   Object-Oriented Canvas Simulation & Structured State
    ===================================================== */
 
-/* ================= 1. SYNTHESIZED WEB AUDIO (Rule H & Compatibility) ================= */
-let audioCtx = null;
-let soundEnabled = true;
-
-function initAudio() {
-    if (!audioCtx) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContext();
-    }
-}
-
-function playTone(freq, type = "sine", duration = 0.1) {
-    if (!soundEnabled) return;
-    try {
-        initAudio();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-    } catch (e) {
-        console.warn("Audio Context waiting for interaction", e);
-    }
-}
-
-function playSfx(type) {
-    if (type === "click") playTone(440, "sine", 0.08);
-    else if (type === "correct") {
-        playTone(523.25, "triangle", 0.1);
-        setTimeout(() => playTone(659.25, "triangle", 0.12), 100);
-    } else if (type === "wrong") {
-        playTone(220, "sawtooth", 0.2);
-    } else if (type === "levelUp") {
-        playTone(440, "sine", 0.1);
-        setTimeout(() => playTone(554.37, "sine", 0.1), 100);
-        setTimeout(() => playTone(659.25, "sine", 0.1), 200);
-        setTimeout(() => playTone(880, "sine", 0.25), 300);
-    }
-}
-
-function toggleAudio() {
-    soundEnabled = !soundEnabled;
-    const btn = document.getElementById("soundBtn");
-    if (btn) btn.textContent = soundEnabled ? "🔊 SFX ON" : "🔇 SFX OFF";
-    if (soundEnabled) playSfx("correct");
-}
-
-/* ================= 2. TAB CONTROLLER ================= */
-function switchTab(tabId, triggerBtn) {
-    playSfx("click");
-    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-    document.querySelectorAll(".nav-tab").forEach(b => {
-        b.classList.remove("active");
-        b.setAttribute("aria-selected", "false");
-    });
-
-    const target = document.getElementById(tabId);
-    if (target) target.classList.add("active");
-    if (triggerBtn) {
-        triggerBtn.classList.add("active");
-        triggerBtn.setAttribute("aria-selected", "true");
-    }
-    window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-/* ================= 3. PERSISTENT LOCAL STATE (Rule C Compliant) ================= */
-let player = {
+// Core Application Engine
+const app = {
+  // State Persistence (TSA Rule C: Zero Accounts / Zero Passwords)
+  state: {
     xp: 0,
     level: 1,
-    completed: { foundation: false, tools: false, ethics: false, mission: false }
-};
+    completed: [false, false, false, false],
+    cores: [false, false, false, false]
+  },
 
-function loadState() {
-    const saved = localStorage.getItem("nexus_ai_state_v2");
-    if (saved) {
-        try { player = JSON.parse(saved); } catch (e) { console.error("Error loading state", e); }
+  // Checkpoints Dataset
+  quizData: [
+    {
+      q: "Checkpoint 1: Why do modern Transformers outperform older Recurrent Neural Networks (RNNs) on long text?",
+      opts: [
+        "A) Transformers only process words one at a time to prevent overflows.",
+        "B) Transformers compute Self-Attention dot-products across all tokens in parallel.",
+        "C) Transformers store static dictionary files on computer hard drives."
+      ],
+      correct: 1,
+      exp: "Correct! Self-Attention processes all sequence tokens in parallel via matrix multiplications."
+    },
+    {
+      q: "Checkpoint 2: What is the student's responsibility when an AI generates a research paper citation?",
+      opts: [
+        "A) Paste the citation directly into the bibliography without checking.",
+        "B) Verify the title, authors, and DOI in an established repository like PubMed or JSTOR.",
+        "C) Ask the same AI model if it is confident in its citation."
+      ],
+      correct: 1,
+      exp: "Correct! LLMs produce probabilistic text rather than indexed queries, making verification essential."
+    },
+    {
+      q: "Checkpoint 3: If an automated admissions algorithm admits Group A at 80% and Group B at 50%, does this violate the Four-Fifths rule?",
+      opts: [
+        "A) Yes; 50/80 = 62.5%, which is below the 80% threshold and indicates disparate impact.",
+        "B) No; any acceptance rate above 40% is legally fair.",
+        "C) Disparate impact only applies to physical machinery."
+      ],
+      correct: 0,
+      exp: "Correct! 50/80 is 62.5%, which violates the EEOC Four-Fifths (80%) disparate impact standard."
+    },
+    {
+      q: "Capstone Scenario: A vendor offers an attendance risk model but refuses to share training data. What action should you recommend?",
+      opts: [
+        "A) Approve the contract immediately because proprietary software is reliable.",
+        "B) Reject deployment until independent bias audits, explainability, and human oversight safeguards are verified.",
+        "C) Delete all previous student attendance records."
+      ],
+      correct: 1,
+      exp: "Correct! High-stakes school algorithms require independent bias audits and explainability safeguards."
     }
-}
+  ],
 
-function saveState() {
-    localStorage.setItem("nexus_ai_state_v2", JSON.stringify(player));
-}
-
-function resetDemoState() {
-    if (confirm("Reset demo progress to Level 1? (Helpful for judges assessing transition states)")) {
-        player = { xp: 0, level: 1, completed: { foundation: false, tools: false, ethics: false, mission: false } };
-        saveState();
-        location.reload();
+  // Load from Browser Storage
+  load() {
+    try {
+      const saved = localStorage.getItem("nexus_ai_intermediate_v1");
+      if (saved) this.state = JSON.parse(saved);
+    } catch (e) {
+      console.warn("Storage fallback initiated", e);
     }
-}
+  },
 
-function quickJudgeUnlock() {
-    player = { xp: 1000, level: 4, completed: { foundation: true, tools: true, ethics: true, mission: true } };
-    saveState();
-    updateUI();
-    playSfx("levelUp");
-    alert("Judge Quick-Demo Mode: All 1000 XP, 4 Badges, and the Verified Completion Diploma have been unlocked!");
-}
+  // Save to Browser Storage
+  save() {
+    try {
+      localStorage.setItem("nexus_ai_intermediate_v1", JSON.stringify(this.state));
+    } catch (e) {
+      console.warn("Storage write failure", e);
+    }
+  },
 
-/* ================= 4. CANVAS NEURAL PROPAGATION ================= */
-const canvas = document.getElementById("neuralCanvas");
-const ctx = canvas ? canvas.getContext("2d") : null;
-const layers = [3, 4, 4, 2];
-let pulseProg = 0;
-let isPulsing = false;
+  // SPA Navigation
+  navigate(tabName) {
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
 
-function drawCanvas() {
-    if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const spacingX = canvas.width / (layers.length + 1);
-    const coords = layers.map((count, lIdx) => {
-        const spacingY = canvas.height / (count + 1);
-        return Array.from({ length: count }, (_, i) => ({
-            x: spacingX * (lIdx + 1),
-            y: spacingY * (i + 1)
-        }));
-    });
+    const targetPanel = document.getElementById("tab-" + tabName);
+    if (targetPanel) targetPanel.classList.add("active");
 
-    // Synapses
-    for (let l = 0; l < coords.length - 1; l++) {
-        coords[l].forEach(s => {
-            coords[l + 1].forEach(e => {
-                ctx.beginPath();
-                ctx.moveTo(s.x, s.y);
-                ctx.lineTo(e.x, e.y);
-                ctx.strokeStyle = "rgba(59, 130, 246, 0.12)";
-                ctx.lineWidth = 1;
-                ctx.stroke();
-            });
-        });
+    const targetBtn = document.querySelector(`.nav-btn[data-tab="${tabName}"]`);
+    if (targetBtn) targetBtn.classList.add("active");
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  },
+
+  // Collect Floating Cores
+  collectCore(idx) {
+    if (this.state.cores[idx]) return;
+
+    this.state.cores[idx] = true;
+    this.state.xp = Math.min(1000, this.state.xp + 50);
+    this.save();
+    this.syncUI();
+
+    const box = document.getElementById("core" + idx);
+    if (box) {
+      box.classList.add("collected");
+      box.innerHTML = `
+        <span class="core-icon">✓</span>
+        <div>
+          <strong>Synapse Core Ω_${idx + 1} Harvested!</strong>
+          <small>Added to your vault (+50 XP Secured)</small>
+        </div>
+      `;
+    }
+  },
+
+  // Check Quiz Answer
+  answerQuiz(quizIdx, choiceIdx, btnElement) {
+    const data = this.quizData[quizIdx];
+    const container = document.getElementById("quiz-opts-" + quizIdx);
+    container.querySelectorAll(".choice-btn").forEach(b => b.disabled = true);
+
+    const feedback = document.getElementById("fb" + quizIdx);
+
+    if (choiceIdx === data.correct) {
+      btnElement.classList.add("correct");
+      feedback.style.color = "var(--green)";
+      feedback.textContent = "✓ " + data.exp;
+
+      if (!this.state.completed[quizIdx]) {
+        this.state.completed[quizIdx] = true;
+        this.state.xp = Math.min(1000, this.state.xp + 200);
+        this.save();
+        this.syncUI();
+      }
+    } else {
+      btnElement.classList.add("wrong");
+      container.children[data.correct].classList.add("correct");
+      feedback.style.color = "var(--red)";
+      feedback.textContent = "Review: " + data.exp;
+    }
+  },
+
+  // Sync HUD and Dashboard UI
+  syncUI() {
+    this.state.level = this.state.xp >= 750 ? 4 : this.state.xp >= 500 ? 3 : this.state.xp >= 250 ? 2 : 1;
+
+    document.getElementById("hudLvl").textContent = this.state.level;
+    document.getElementById("hudXp").textContent = this.state.xp;
+
+    const glyphs = ["🧠", "⚡", "⚖️", "🧭"];
+    for (let i = 0; i < 4; i++) {
+      const slot = document.getElementById("v" + i);
+      if (slot) slot.textContent = this.state.cores[i] ? glyphs[i] : "⚪";
     }
 
-    // Forward Pulse Animation
-    if (isPulsing) {
-        pulseProg += 0.03;
-        const seg = Math.floor(pulseProg * (coords.length - 1));
-        const subProg = (pulseProg * (coords.length - 1)) - seg;
-        if (seg < coords.length - 1) {
-            coords[seg].forEach(s => {
-                coords[seg + 1].forEach(e => {
-                    const px = s.x + (e.x - s.x) * subProg;
-                    const py = s.y + (e.y - s.y) * subProg;
-                    ctx.beginPath();
-                    ctx.arc(px, py, 2.5, 0, Math.PI * 2);
-                    ctx.fillStyle = "#38bdf8";
-                    ctx.fill();
-                });
-            });
-        } else {
-            isPulsing = false;
-            pulseProg = 0;
-            document.getElementById("pulseStatus").textContent = "Forward propagation complete. Output tensor verified.";
-        }
+    const dashXp = document.getElementById("dashXp");
+    const dashLvl = document.getElementById("dashLvl");
+    const dashFill = document.getElementById("dashFill");
+    if (dashXp) dashXp.textContent = this.state.xp;
+    if (dashLvl) dashLvl.textContent = this.state.level;
+    if (dashFill) dashFill.style.width = (this.state.xp / 10) + "%";
+
+    for (let j = 0; j < 4; j++) {
+      const progEl = document.getElementById("prog" + j);
+      if (progEl) {
+        progEl.textContent = this.state.completed[j] ? "100% Certified" : "0%";
+        progEl.style.color = this.state.completed[j] ? "var(--green)" : "var(--blue)";
+      }
+      const badge = document.getElementById("b" + j);
+      if (badge && this.state.completed[j]) badge.className = "card badge-box unlocked";
     }
 
-    // Nodes
-    coords.forEach((layer, lIdx) => {
-        layer.forEach(n => {
-            ctx.beginPath();
-            ctx.arc(n.x, n.y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = lIdx === 0 ? "#3b82f6" : lIdx === layers.length - 1 ? "#34d399" : "#a855f7";
-            ctx.fill();
-        });
-    });
+    const cert = document.getElementById("certBanner");
+    if (cert) cert.style.display = this.state.xp >= 1000 ? "flex" : "none";
+  },
 
-    requestAnimationFrame(drawCanvas);
-}
+  // Judge Bypass Shortcut
+  judgeUnlock() {
+    this.state = { xp: 1000, level: 4, completed: [true, true, true, true], cores: [true, true, true, true] };
+    this.save();
+    this.syncUI();
+    alert("⚡ Judge Mode Activated: 1,000 XP granted, all badges unlocked, diploma verified.");
+  },
 
-function triggerActivationPulse() {
-    isPulsing = true;
-    pulseProg = 0;
-    playSfx("click");
-    document.getElementById("pulseStatus").textContent = "Propagating activation vectors through parameter matrices...";
-}
-
-/* ================= 5. HOVER GRAPHICS DATA ================= */
-const transformerNodes = {
-    embed: {
-        t: "1. Input & Positional Embeddings",
-        m: "E = TokenEmbedding(x) + PositionalEncoding(pos)",
-        d: "Projects discrete token IDs into 512-dimensional continuous vectors and injects sinusoidal positional encoding so the model tracks sequence word order without recurrent loops.",
-        i: "[Batch, Sequence]",
-        o: "[Batch, Sequence, 512]"
-    },
-    mha: {
-        t: "2. Multi-Head Self-Attention (Q, K, V)",
-        m: "Attention(Q,K,V) = softmax((Q*K^T)/sqrt(d_k))*V",
-        d: "Projects queries, keys, and values into parallel linear subspaces. Computes dot-product compatibility scores across all tokens simultaneously to capture context regardless of distance.",
-        i: "[Batch, Sequence, 512]",
-        o: "[Batch, Sequence, 512]"
-    },
-    norm1: {
-        t: "3. Residual Add & Layer Normalization",
-        m: "Output = LayerNorm(x + Sublayer(x))",
-        d: "Residual skip-connections route identity gradients directly around transformer sublayers, preventing vanishing gradients during deep calculus backpropagation.",
-        i: "[Batch, Sequence, 512]",
-        o: "[Batch, Sequence, 512]"
-    },
-    ffn: {
-        t: "4. Feed-Forward Neural Network",
-        m: "FFN(x) = max(0, x*W1 + b1)*W2 + b2",
-        d: "Position-wise multilayer perceptron with non-linear activation (GELU/ReLU) that expands token representations into wider feature dimensions (typically 2,048) to synthesize semantic depth.",
-        i: "[Batch, Sequence, 512]",
-        o: "[Batch, Sequence, 2048]"
-    },
-    softmax: {
-        t: "5. Linear Output & Softmax Logits",
-        m: "P(token_i) = exp(z_i) / sum(exp(z_j))",
-        d: "Projects high-dimensional vectors across the model's entire 32,000+ vocabulary dictionary, producing a normalized probability distribution over candidate next tokens.",
-        i: "[Batch, Sequence, 512]",
-        o: "[Batch, VocabSize]"
+  // Reset Progress
+  reset() {
+    if (confirm("Reset local player progress back to Level 1?")) {
+      this.state = { xp: 0, level: 1, completed: [false, false, false, false], cores: [false, false, false, false] };
+      this.save();
+      location.reload();
     }
-};
+  },
 
-function inspectNode(key) {
-    const data = transformerNodes[key];
-    if (!data) return;
-    playSfx("click");
-    document.getElementById("hudNodeTitle").textContent = data.t;
-    document.getElementById("hudNodeMath").textContent = data.m;
-    document.getElementById("hudNodeDesc").textContent = data.d;
-    document.getElementById("hudNodeIn").textContent = data.i;
-    document.getElementById("hudNodeOut").textContent = data.o;
-}
-
-const ethicsTiers = {
-    socratic: {
-        t: "Zone 1: Socratic Study Partner",
-        s: "PERMISSIBLE • Full Honor Code Compliance",
-        d: "Prompting AI to act as an interrogative coach, test your mastery of physics equations, or explain confusing historical texts. The student retains 100% intellectual authorship.",
-        p: "None Required",
-        r: "Zero Violation Risk"
-    },
-    outline: {
-        t: "Zone 2: Structural Outlining",
-        s: "PERMISSIBLE WITH PERMISSION",
-        d: "Using AI to brainstorm perspectives or check logical section transitions. Allowed if instructor syllabus explicitly authorizes structural scaffolding.",
-        p: "Mandatory Syllabus Disclosure",
-        r: "Low Risk (If Disclosed)"
-    },
-    paraphrase: {
-        t: "Zone 3: Heavy Paraphrasing",
-        s: "ACADEMICALLY COMPROMISED",
-        d: "Running entire drafted arguments through AI spin rewriters to alter sentence structures while evading detection. Replaces authentic student voice with synthetic syntax.",
-        p: "Prohibited Without Consent",
-        r: "High Violation Risk"
-    },
-    plagiarism: {
-        t: "Zone 4: Direct Plagiarism",
-        s: "STRICT HONOR VIOLATION",
-        d: "Submitting generated prose, unverified citations, or AI-solved examination items as your original academic work.",
-        p: "Strictly Prohibited",
-        r: "Severe Academic Sanctions"
-    }
-};
-
-function inspectEthics(key) {
-    const data = ethicsTiers[key];
-    if (!data) return;
-    playSfx("click");
-    document.getElementById("hudEthicsTitle").textContent = data.t;
-    document.getElementById("hudEthicsStatus").textContent = data.s;
-    document.getElementById("hudEthicsDesc").textContent = data.d;
-    document.getElementById("hudEthicsPermit").textContent = data.p;
-    document.getElementById("hudEthicsRisk").textContent = data.r;
-}
-
-/* ================= 6. SANDBOX LOGIC ================= */
-const tokenPalette = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ec4899", "#06b6d4"];
-
-function runTokenizer() {
-    const raw = document.getElementById("tokenizerInput").value;
+  // Tokenizer Lab
+  updateTokens() {
+    const input = document.getElementById("tokInput");
+    const text = input ? input.value.trim() : "";
     const tray = document.getElementById("tokenOutput");
-    const countEl = document.getElementById("tokenCount");
-    if (!raw.trim()) { tray.innerHTML = ""; countEl.textContent = 0; return; }
+    const count = document.getElementById("tokenCount");
+    if (!text) { if (tray) tray.innerHTML = ""; if (count) count.textContent = "0"; return; }
 
-    const tokens = raw.match(/[A-Z]?[a-z]+|[A-Z]+(?![a-z])|\d+|[^\s\w]/g) || [raw];
-    countEl.textContent = tokens.length;
-    tray.innerHTML = "";
-
-    tokens.forEach((t, i) => {
+    const tokens = text.match(/[A-Z]?[a-z]+|[A-Z]+(?![a-z])|\d+|[^\s\w]/g) || [text];
+    if (count) count.textContent = tokens.length;
+    if (tray) {
+      tray.innerHTML = "";
+      tokens.forEach(t => {
         const chip = document.createElement("span");
-        chip.className = "token-chip";
-        chip.style.backgroundColor = tokenPalette[i % tokenPalette.length];
-        let hash = 0;
-        for (let j = 0; j < t.length; j++) hash = (hash << 5) - hash + t.charCodeAt(j);
-        chip.textContent = `${t} (ID:${Math.abs(hash % 32000)})`;
+        chip.className = "chip";
+        chip.textContent = t;
         tray.appendChild(chip);
-    });
-}
+      });
+    }
+  },
 
-function evaluatePrompt() {
-    const val = document.getElementById("userPrompt").value.toLowerCase();
-    const hasRole = /act as|you are|tutor|teacher|expert|evaluator|scientist|mentor/.test(val);
-    const hasAction = /explain|analyze|break down|summarize|list|compare|solve|critique/.test(val);
-    const hasFormat = /bullet|table|json|paragraph|numbered|outline|markdown|latex/.test(val);
-    const hasAudience = /high school|student|beginner|9th|10th|novice|peer|senior/.test(val);
-    const hasContext = val.length > 25;
+  // C.R.A.F.T. Prompt Evaluator
+  evaluatePrompt() {
+    const input = document.getElementById("craftInput");
+    const val = input ? input.value.toLowerCase() : "";
+    const c = val.length > 25;
+    const r = /act as|you are|tutor|teacher|expert|evaluator/.test(val);
+    const a = /explain|analyze|break down|compare|solve|list/.test(val);
+    const f = /bullet|table|json|paragraph|numbered/.test(val);
+    const t = /high school|student|beginner|9th|10th/.test(val);
 
-    document.getElementById("pillRole").classList.toggle("active", hasRole);
-    document.getElementById("pillAction").classList.toggle("active", hasAction);
-    document.getElementById("pillFormat").classList.toggle("active", hasFormat);
-    document.getElementById("pillAudience").classList.toggle("active", hasAudience);
-    document.getElementById("pillContext").classList.toggle("active", hasContext);
+    document.getElementById("pContext").classList.toggle("active", c);
+    document.getElementById("pRole").classList.toggle("active", r);
+    document.getElementById("pAction").classList.toggle("active", a);
+    document.getElementById("pFormat").classList.toggle("active", f);
+    document.getElementById("pAudience").classList.toggle("active", t);
 
-    const score = [hasRole, hasAction, hasFormat, hasAudience, hasContext].filter(Boolean).length * 20;
-    document.getElementById("promptScore").textContent = score + "%";
-    document.getElementById("promptFeedback").textContent =
-        score === 100 ? "✓ Exemplary structure: fully calibrated across all 5 C.R.A.F.T. parameters." : "Add missing elements (e.g., target audience or output format).";
-}
+    const score = [c, r, a, f, t].filter(Boolean).length * 20;
+    document.getElementById("craftScore").textContent = score + "%";
+    const hint = document.getElementById("craftHint");
+    hint.textContent = score === 100 ? "✓ Exemplary: All 5 C.R.A.F.T. parameters detected[span_98](start_span)[span_98](end_span)[span_99](start_span)[span_99](end_span)." : "Add missing parameters (e.g., Role or Format)[span_100](start_span)[span_100](end_span)[span_101](start_span)[span_101](end_span).";
+    hint.style.color = score === 100 ? "var(--green)" : "var(--blue)";
+  },
 
-function simulateFairness() {
-    const val = parseInt(document.getElementById("fairnessSlider").value);
+  // Fairness Simulator
+  updateBias() {
+    const slider = document.getElementById("biasSlider");
+    const val = parseInt(slider.value);
     const gA = val;
     const gB = 100 - val;
-    document.getElementById("ratioLabel").textContent = `${gA}% Cohort A / ${gB}% Cohort B`;
+    document.getElementById("ratioLabel").textContent = `${gA}% Group A / ${gB}% Group B`;
 
     const confA = Math.min(95, Math.max(30, Math.round(gA * 1.05 + 10)));
     const confB = Math.min(95, Math.max(25, Math.round(gB * 1.05 + 10)));
-    document.getElementById("meterA").style.width = confA + "%";
-    document.getElementById("meterB").style.width = confB + "%";
-    document.getElementById("confValA").textContent = confA + "%";
-    document.getElementById("confValB").textContent = confB + "%";
 
-    const badge = document.getElementById("parityBadge");
+    document.getElementById("fillA").style.width = confA + "%";
+    document.getElementById("fillB").style.width = confB + "%";
+    document.getElementById("confA").textContent = confA + "%";
+    document.getElementById("confB").textContent = confB + "%";
+
     const diff = Math.abs(confA - confB);
-    if (diff <= 12) {
-        badge.textContent = "Status: Balanced";
-        badge.style.color = "var(--green)";
-        document.getElementById("fairnessInsight").textContent = "Uniform training distribution: model confidence and false rejection rates remain calibrated across both cohorts.";
-    } else {
-        badge.textContent = "Status: Skewed";
-        badge.style.color = "var(--red)";
-        document.getElementById("fairnessInsight").textContent = `Alert: ${diff}% disparity. The underrepresented cohort suffers elevated false rejections due to training data imbalance.`;
-    }
-}
+    const badge = document.getElementById("parityBadge");
+    const hint = document.getElementById("fairnessHint");
 
-/* ================= 7. EXPANDED APPLICATION EXAM REPOSITORY ================= */
-const quizRepo = {
-    foundation: [
-        {
-            q: "Scenario 1: A biology researcher is processing a 20,000-word genomic manuscript. Why does a Transformer outperform a traditional Recurrent Neural Network (RNN)?",
-            a: [
-                "Transformers compute self-attention across all tokens in parallel, whereas RNNs process words sequentially and lose distant contextual signals through vanishing gradients.",
-                "Transformers permanently store the entire manuscript in the computer's CPU cache without calculating mathematical weights.",
-                "RNNs only work on numbers, whereas Transformers are strictly designed for qualitative human emotion."
-            ],
-            c: 0,
-            exp: "Transformers eliminate sequential loops, using multi-head self-attention dot-products to attend to relationships across long sequences in parallel."
-        },
-        {
-            q: "Scenario 2: During model pre-training, the Cross-Entropy loss value remains elevated. What mechanism computes weight updates to reduce this loss?",
-            a: [
-                "Backpropagation calculates partial derivatives of the loss with respect to every weight using the calculus Chain Rule, guiding gradient descent updates.",
-                "The server automatically randomizes the input vocabulary until a lower error occurs by chance.",
-                "Engineers manually rewrite the hidden layers in binary."
-            ],
-            c: 0,
-            exp: "Backpropagation applies the Chain Rule backward through layers, calculating the exact gradient vector needed to minimize loss via gradient descent."
-        },
-        {
-            q: "Scenario 3: An NLP model evaluates the phrases 'apple fruit' and 'apple company'. How does the architecture distinguish the meaning of 'apple'?",
-            a: [
-                "Multi-Head Self-Attention calculates dynamic dot-product affinity between 'apple' and surrounding context words, shifting its vector embedding dynamically.",
-                "The model executes a hard-coded dictionary lookup to choose the first definition listed.",
-                "The model converts the word into an analog audio waveform."
-            ],
-            c: 0,
-            exp: "Self-attention weights allow surrounding context tokens ('fruit' vs 'company') to adjust the intermediate vector representation of the polysemous word."
-        },
-        {
-            q: "Scenario 4: In high-dimensional vector embeddings, what geometric relationship models conceptual similarity between words?",
-            a: [
-                "Cosine similarity: words with similar semantic meanings project with small angular distances between their multi-dimensional vectors.",
-                "Physical distance between the ASCII text characters on the user's hard drive.",
-                "The alphabetical order of words in the vocabulary dictionary."
-            ],
-            c: 0,
-            exp: "Vector embeddings place conceptually related terms close together in high-dimensional space, measured via cosine similarity."
-        },
-        {
-            q: "Scenario 5: What occurs when an AI model moves from the 'training' phase to operational 'inference'?",
-            a: [
-                "Model parameters and synaptic weights are frozen, and the model applies its learned matrix values to generate outputs for new queries without further gradient updates.",
-                "The neural network wipes its hidden layers clean to conserve server storage.",
-                "The model downloads human user profiles to rewrite its primary loss function."
-            ],
-            c: 0,
-            exp: "Inference represents live operational deployment using fixed, frozen parameter weights to calculate predictions for unseen inputs."
-        }
-    ],
-    tools: [
-        {
-            q: "Scenario 1: A 10th grader prompts an AI: 'Write an essay about cell division.' Why does this prompt violate the C.R.A.F.T. standard?",
-            a: [
-                "It lacks an operational Role (e.g., AP Biology tutor), Context (curriculum constraints), Format (comparative table/rubric), and Target Audience.",
-                "It does not contain at least 1,000 words in the query.",
-                "It uses lowercase text."
-            ],
-            c: 0,
-            exp: "The prompt lacks all structural C.R.A.F.T. constraints, resulting in generic, uncalibrated output that fails to support academic learning."
-        },
-        {
-            q: "Scenario 2: An AI study tool confidently cites: 'Mendel, G. (2024). Genetic Algorithms in High School Biology, Nature, 45(2).' How should a student evaluate this citation?",
-            a: [
-                "Recognize it as a probable hallucination caused by probabilistic next-token generation, and verify the DOI in academic indexes like PubMed or Google Scholar.",
-                "Accept the citation as authentic because Large Language Models never generate false references.",
-                "Assume the journal Nature published Gregor Mendel in 2024."
-            ],
-            c: 0,
-            exp: "LLMs predict statistically plausible word patterns and routinely invent synthetic authors, dates, and titles that must be independently cross-checked."
-        },
-        {
-            q: "Scenario 3: How can a high school debater ethically leverage a Large Language Model while preparing for a national tournament?",
-            a: [
-                "Use the AI as a Socratic sparring partner to generate counterarguments and expose logical flaws in drafted arguments.",
-                "Prompt the AI to write entire debate constructive speeches to read aloud without personal research.",
-                "Use generative tools to manufacture fabricated statistical studies to deceive judges."
-            ],
-            c: 0,
-            exp: "Socratic argument interrogation and outline testing enhance student understanding while preserving personal intellectual voice."
-        },
-        {
-            q: "Scenario 4: Why should a prompt specify an explicit 'Target Audience' when studying complex technical topics?",
-            a: [
-                "It constrains the model's vocabulary, technical assumptions, and pedagogical tone to match the student's current learning level.",
-                "It forces the model to encrypt its outputs for privacy.",
-                "It reduces internet bandwidth consumption by 40%."
-            ],
-            c: 0,
-            exp: "Target audience constraints calibrate explanation depth, ensuring the output avoids unhelpful jargon or oversimplified generalities."
-        },
-        {
-            q: "Scenario 5: When an AI model generates computer code for a science simulation, what is the student's academic responsibility?",
-            a: [
-                "Inspect every line, test for logic errors, document AI assistance per instructor guidelines, and comprehend execution flow completely.",
-                "Paste the code directly into the assignment without testing it.",
-                "Claim personal authorship of the raw code."
-            ],
-            c: 0,
-            exp: "Academic integrity requires full code comprehension, testing, error verification, and transparent attribution of tools used."
-        }
-    ],
-    ethics: [
-        {
-            q: "Scenario 1: A school district tests an automated admissions algorithm. Group A applicants are accepted at a 60% rate, while Group B applicants are accepted at 40%. Does this violate the Four-Fifths Rule?",
-            a: [
-                "Yes. The selection ratio is 40/60 = 66.7%, which falls below the 80% federal disparate impact threshold.",
-                "No. Any selection rate above 30% is legally balanced under civil rights standards.",
-                "No. Disparate impact only applies to computer hardware."
-            ],
-            c: 0,
-            exp: "Under the Four-Fifths Rule, a selection rate below 80% of the highest group's rate (here 66.7% vs 80%) flags potential disparate impact."
-        },
-        {
-            q: "Scenario 2: A student pastes their classmate's unredacted personal essay containing medical records into a public consumer AI tool. What privacy safeguard is compromised?",
-            a: [
-                "Institutional privacy protections under FERPA, because public AI endpoints frequently log prompts for model training, creating data exposure risks.",
-                "The computer's local Wi-Fi encryption protocol.",
-                "The computer's power supply efficiency."
-            ],
-            c: 0,
-            exp: "Commercial AI prompts can be stored in training logs. Sharing confidential peer records violates educational privacy standards like FERPA."
-        },
-        {
-            q: "Scenario 3: A student uses an AI paraphrase tool to spin their entire literature paper to evade plagiarism filters. Under academic honor codes, how is this categorized?",
-            a: [
-                "Zone 3/4 Academic Dishonesty: obfuscating student voice with synthetic text to misrepresent authorship.",
-                "Zone 1 Socratic learning: fully permissible without instructor disclosure.",
-                "Standard grammatical proofreading."
-            ],
-            c: 0,
-            exp: "Automated spinning to obscure source origins replaces student voice and constitutes academic dishonesty under high school honor codes."
-        },
-        {
-            q: "Scenario 4: An automated facial recognition camera at school has higher false rejection rates for darker skin tones. What is the root algorithmic cause?",
-            a: [
-                "The training dataset underrepresented diverse demographic skin tones, creating lower model confidence for those cohorts.",
-                "The camera lenses developed personal prejudice.",
-                "The software was written in Python instead of C++."
-            ],
-            c: 0,
-            exp: "Computer vision classifiers trained on unbalanced demographic datasets demonstrate lower confidence and higher error rates on underrepresented groups."
-        },
-        {
-            q: "Scenario 5: What is the primary difference between permitted AI study assistance and academic plagiarism?",
-            a: [
-                "Permitted assistance uses AI for conceptual feedback and outlining while preserving student authorship; plagiarism submits AI-generated text as original student work.",
-                "Plagiarism only applies to printed textbooks, not digital text.",
-                "There is no difference; all software usage is considered plagiarism."
-            ],
-            c: 0,
-            exp: "Ethical scholarship centers on authentic authorship, transparent methodology, and personal intellectual ownership."
-        }
-    ],
-    mission: [
-        {
-            q: "Capstone Scenario 1: You are auditing a predictive dropout model for your school board. What initial action must you mandate before deployment?",
-            a: [
-                "Execute a comprehensive demographic parity audit and establish mandatory human counselor review for all flagged interventions.",
-                "Deploy the model immediately to automate disciplinary actions without human oversight.",
-                "Delete all historical student performance data."
-            ],
-            c: 0,
-            exp: "High-stakes educational forecasting requires thorough bias audits and human supervision before deployment."
-        },
-        {
-            q: "Capstone Scenario 2: The predictive model flags a student for academic probation, but the confidence score is only 51%. What algorithmic safeguard should trigger?",
-            a: [
-                "Decline automated action and route the low-confidence flag to human counselors for personalized evaluation.",
-                "Automatically issue academic probation to be safe.",
-                "Alter the student's permanent transcript."
-            ],
-            c: 0,
-            exp: "Responsible AI systems enforce confidence thresholds that defer ambiguous or borderline predictions to human expertise."
-        },
-        {
-            q: "Capstone Scenario 3: The software vendor refuses to explain how the model reaches its risk scores, citing proprietary trade secrets. How should the student auditor respond?",
-            a: [
-                "Reject the software due to a lack of explainability, requiring transparent algorithmic auditing before deployment.",
-                "Approve the vendor contract without questions.",
-                "Assume proprietary models are always correct."
-            ],
-            c: 0,
-            exp: "High-stakes educational decisions require explainable algorithms so educators and students understand why a prediction was generated."
-        },
-        {
-            q: "Capstone Scenario 4: An audit reveals the model was trained on data from an elite private school in another state. Why does this invalidate its use in your public high school?",
-            a: [
-                "The training data suffers from out-of-distribution dataset shift, meaning its learned patterns will not generalize accurately to your local demographic.",
-                "Public schools cannot run algorithms written for private schools.",
-                "The file size of the model is too large."
-            ],
-            c: 0,
-            exp: "Models trained on non-representative populations fail to generalize, leading to invalid predictions on different student bodies."
-        },
-        {
-            q: "Capstone Scenario 5: What core principle unites 21st-century AI literacy across foundations, tools, and ethics?",
-            a: [
-                "Understanding the mechanical architecture, critically verifying factual claims, and ensuring tools serve human understanding ethically.",
-                "Relying entirely on automated tools for all cognitive work.",
-                "Avoiding all modern computational technologies."
-            ],
-            c: 0,
-            exp: "True AI literacy combines mechanical understanding with critical scrutiny, ethical responsibility, and disciplined verification."
-        }
-    ]
+    if (diff <= 12) {
+      badge.textContent = "Status: Balanced";
+      badge.style.color = "var(--green)";
+      hint.textContent = "Balanced distribution: model outputs achieve demographic parity under the 80% rule[span_102](start_span)[span_102](end_span)[span_103](start_span)[span_103](end_span).";
+    } else {
+      badge.textContent = "Status: Skewed";
+      badge.style.color = "var(--red)";
+      hint.textContent = `Alert: ${diff}% disparity. The underrepresented cohort receives higher false rejections[span_104](start_span)[span_104](end_span)[span_105](start_span)[span_105](end_span).`;
+    }
+  },
+
+  // Inspectable Transformer Pipeline
+  inspectNode(key) {
+    const data = {
+      embed: {
+        t: "1. Input & Positional Embeddings",
+        m: "E = TokenEmbedding(x) + PositionalEncoding(pos)",
+        d: "Maps tokens to 512-dimensional continuous vectors and injects sinusoidal waveforms to track word order[span_106](start_span)[span_106](end_span)[span_107](start_span)[span_107](end_span).",
+        in: "[Batch, Sequence]",
+        out: "[Batch, Sequence, 512]"
+      },
+      mha: {
+        t: "2. Multi-Head Self-Attention",
+        m: "Attention(Q,K,V) = softmax((Q*K^T)/√d_k)*V",
+        d: "Computes dot-product affinity matrices between every word pair in parallel, tracking sentence context[span_108](start_span)[span_108](end_span)[span_109](start_span)[span_109](end_span).",
+        in: "[Batch, Sequence, 512]",
+        out: "[Batch, Sequence, 512]"
+      },
+      norm: {
+        t: "3. Residual Add & Layer Normalization",
+        m: "Output = LayerNorm(x + Sublayer(x))",
+        d: "Skip-connections pass identity gradients directly around sublayers, preventing vanishing gradients[span_110](start_span)[span_110](end_span)[span_111](start_span)[span_111](end_span).",
+        in: "[Batch, Sequence, 512]",
+        out: "[Batch, Sequence, 512]"
+      },
+      ffn: {
+        t: "4. Feed-Forward Neural Network",
+        m: "FFN(x) = max(0, x*W1 + b1)*W2 + b2",
+        d: "Applies two dense linear transformations with GELU activation to expand features into 2,048 dimensions[span_112](start_span)[span_112](end_span)[span_113](start_span)[span_113](end_span).",
+        in: "[Batch, Sequence, 512]",
+        out: "[Batch, Sequence, 2048]"
+      }
+    };
+    const node = data[key];
+    if (!node) return;
+    document.getElementById("hudTitle").textContent = node.t;
+    document.getElementById("hudMath").textContent = node.m;
+    document.getElementById("hudDesc").textContent = node.d;
+    document.getElementById("hudIn").textContent = node.in;
+    document.getElementById("hudOut").textContent = node.out;
+  },
+
+  // Pulse Neural Network Animation
+  pulseNet() {
+    neuralNetwork.isPulsing = true;
+    neuralNetwork.pulseProgress = 0;
+    document.getElementById("pulseText").textContent = "Transmitting activations...";
+  }
 };
 
-let activeQuizKey = null;
-let activeQIdx = 0;
+// ================= PARTICLE PHYSICS BACKGROUND SIMULATION =================
+class Particle {
+  constructor(canvasWidth, canvasHeight) {
+    this.x = Math.random() * canvasWidth;
+    this.y = Math.random() * canvasHeight;
+    this.vx = (Math.random() - 0.5) * 0.4;
+    this.vy = (Math.random() - 0.5) * 0.4;
+    this.radius = 1.5;
+  }
 
-function openGame(key) {
-    if (player.completed[key]) {
-        alert("This module benchmark is already verified! Check your scholar dashboard.");
-        return;
-    }
-    if (key === "mission" && (!player.completed.foundation || !player.completed.tools || !player.completed.ethics)) {
-        alert("Integrity Guardrail: Complete Modules 1, 2, and 3 before launching the Synthesis Capstone!");
-        return;
-    }
+  update(width, height, mouse) {
+    this.x += this.vx;
+    this.y += this.vy;
 
-    playSfx("click");
-    activeQuizKey = key;
-    activeQIdx = 0;
-    document.getElementById("quizModal").classList.add("active");
-    document.getElementById("quizTitle").textContent = key.toUpperCase() + " APPLICATION BENCHMARK";
-    document.getElementById("qTotal").textContent = quizRepo[key].length;
-    renderQuiz();
+    if (this.x < 0 || this.x > width) this.vx *= -1;
+    if (this.y < 0 || this.y > height) this.vy *= -1;
+
+    // Repulsion from cursor
+    if (mouse.x !== null) {
+      const dx = mouse.x - this.x;
+      const dy = mouse.y - this.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 100) {
+        this.x -= (dx / dist) * 1.5;
+        this.y -= (dy / dist) * 1.5;
+      }
+    }
+  }
+
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(148, 163, 184, 0.4)";
+    ctx.fill();
+  }
 }
 
-function renderQuiz() {
-    const qData = quizRepo[activeQuizKey][activeQIdx];
-    document.getElementById("qNum").textContent = activeQIdx + 1;
-    document.getElementById("quizProgress").style.width = (activeQIdx / quizRepo[activeQuizKey].length * 100) + "%";
-    document.getElementById("quizQuestion").textContent = qData.q;
-    document.getElementById("quizFeedback").textContent = "";
-    document.getElementById("quizNextBtn").style.display = "none";
+const bgSimulation = {
+  canvas: document.getElementById("bgCanvas"),
+  ctx: null,
+  particles: [],
+  mouse: { x: null, y: null },
 
-    const box = document.getElementById("quizAnswers");
-    box.innerHTML = "";
-    qData.a.forEach((ans, i) => {
-        const btn = document.createElement("button");
-        btn.className = "ans-btn";
-        btn.textContent = ans;
-        btn.onclick = () => submitAnswer(i, btn);
-        box.appendChild(btn);
-    });
-}
+  init() {
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext("2d");
+    this.resize();
+    window.addEventListener("resize", () => this.resize());
+    window.addEventListener("mousemove", e => { this.mouse.x = e.clientX; this.mouse.y = e.clientY; });
+    window.addEventListener("mouseout", () => { this.mouse.x = null; this.mouse.y = null; });
+    this.animate();
+  },
 
-function submitAnswer(idx, btnElem) {
-    const qData = quizRepo[activeQuizKey][activeQIdx];
-    document.querySelectorAll(".ans-btn").forEach(b => b.disabled = true);
+  resize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+    const count = Math.floor((this.canvas.width * this.canvas.height) / 18000);
+    this.particles = Array.from({ length: count }, () => new Particle(this.canvas.width, this.canvas.height));
+  },
 
-    if (idx === qData.c) {
-        btnElem.classList.add("correct");
-        playSfx("correct");
-        document.getElementById("quizFeedback").innerHTML = "<strong style='color:var(--green);'>✓ Benchmark Verified:</strong> " + qData.exp;
-    } else {
-        btnElem.classList.add("wrong");
-        playSfx("wrong");
-        document.querySelectorAll(".ans-btn")[qData.c].classList.add("correct");
-        document.getElementById("quizFeedback").innerHTML = "<strong style='color:var(--red);'>Diagnostic Rationale:</strong> " + qData.exp;
-    }
-    document.getElementById("quizNextBtn").style.display = "inline-block";
-}
+  animate() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-function nextQuestion() {
-    playSfx("click");
-    activeQIdx++;
-    if (activeQIdx >= quizRepo[activeQuizKey].length) {
-        player.completed[activeQuizKey] = true;
-        player.xp = Math.min(1000, player.xp + 250);
-        saveState();
-        updateUI();
-        playSfx("levelUp");
-        closeGame();
-        return;
-    }
-    renderQuiz();
-}
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i];
+      p.update(this.canvas.width, this.canvas.height, this.mouse);
+      p.draw(this.ctx);
 
-function closeGame() {
-    document.getElementById("quizModal").classList.remove("active");
-}
-
-/* ================= 8. DASHBOARD & UI SYNCHRONIZATION ================= */
-function updateUI() {
-    player.level = player.xp >= 750 ? 4 : player.xp >= 500 ? 3 : player.xp >= 250 ? 2 : 1;
-
-    // Header HUD
-    document.getElementById("hudLevel").textContent = player.level;
-    document.getElementById("hudXP").textContent = player.xp;
-
-    // Dashboard HUD
-    document.getElementById("dashLevel").textContent = player.level;
-    document.getElementById("dashXP").textContent = player.xp;
-    document.getElementById("dashXPBar").style.width = (player.xp / 10) + "%";
-
-    // Status Texts
-    const msg = document.getElementById("dashMessage");
-    if (player.xp === 0) msg.textContent = "Complete Module 1 application scenarios to begin your AI journey!";
-    else if (player.xp < 1000) msg.textContent = "Progress authenticated! Complete all modules to unlock your diploma.";
-    else {
-        msg.textContent = "Curriculum 100% completed! Official diploma unlocked.";
-        document.getElementById("diplomaBanner").style.display = "flex";
-    }
-
-    // Module Completion Badges & Status Indicators
-    const map = { foundation: "badge1", tools: "badge2", ethics: "badge3", mission: "badge4" };
-    const statusMap = {
-        foundation: "statusFoundation",
-        tools: "statusTools",
-        ethics: "statusEthics",
-        mission: "statusMission"
-    };
-
-    Object.keys(player.completed).forEach(k => {
-        if (player.completed[k]) {
-            document.getElementById(map[k]).className = "card badge-card unlocked";
-            const sEl = document.getElementById(statusMap[k]);
-            if (sEl) {
-                sEl.textContent = "✓ Certified (5/5 Passed)";
-                sEl.className = "status-indicator complete";
-            }
+      // Synaptic proximity lines
+      for (let j = i + 1; j < this.particles.length; j++) {
+        const p2 = this.particles[j];
+        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+        if (dist < 80) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(p.x, p.y);
+          this.ctx.lineTo(p2.x, p2.y);
+          this.ctx.strokeStyle = `rgba(203, 213, 225, ${0.15 * (1 - dist / 80)})`;
+          this.ctx.lineWidth = 0.5;
+          this.ctx.stroke();
         }
+      }
+    }
+    requestAnimationFrame(() => this.animate());
+  }
+};
+
+// ================= HERO DRAGGABLE NEURAL PLAYGROUND =================
+const neuralNetwork = {
+  canvas: document.getElementById("neuralCanvas"),
+  ctx: null,
+  nodes: [
+    { x: 50, y: 50, layer: 0, label: "x₁" },
+    { x: 50, y: 110, layer: 0, label: "x₂" },
+    { x: 50, y: 170, layer: 0, label: "x₃" },
+    { x: 190, y: 70, layer: 1, label: "h₁" },
+    { x: 190, y: 130, layer: 1, label: "h₂" },
+    { x: 330, y: 100, layer: 2, label: "y₁" }
+  ],
+  draggingNode: null,
+  pulseProgress: 0,
+  isPulsing: false,
+
+  init() {
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext("2d");
+
+    this.canvas.addEventListener("mousedown", e => {
+      const rect = this.canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      this.nodes.forEach(n => {
+        if (Math.hypot(n.x - mx, n.y - my) < 14) this.draggingNode = n;
+      });
     });
 
-    if (player.completed.foundation && player.completed.tools && player.completed.ethics) {
-        const misStatus = document.getElementById("statusMission");
-        if (misStatus && !player.completed.mission) misStatus.textContent = "Unlocked & Ready";
+    window.addEventListener("mousemove", e => {
+      if (!this.draggingNode) return;
+      const rect = this.canvas.getBoundingClientRect();
+      this.draggingNode.x = Math.max(20, Math.min(this.canvas.width - 20, e.clientX - rect.left));
+      this.draggingNode.y = Math.max(20, Math.min(this.canvas.height - 20, e.clientY - rect.top));
+    });
+
+    window.addEventListener("mouseup", () => { this.draggingNode = null; });
+    this.animate();
+  },
+
+  animate() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Draw Synaptic Connections
+    for (let i = 0; i < this.nodes.length; i++) {
+      for (let j = 0; j < this.nodes.length; j++) {
+        if (this.nodes[j].layer === this.nodes[i].layer + 1) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(this.nodes[i].x, this.nodes[i].y);
+          this.ctx.lineTo(this.nodes[j].x, this.nodes[j].y);
+          this.ctx.strokeStyle = "rgba(59, 130, 246, 0.25)";
+          this.ctx.lineWidth = 1.2;
+          this.ctx.stroke();
+        }
+      }
     }
 
-    // Competency Radar Chart
-    const y1 = player.completed.foundation ? 25 : 100;
-    const x2 = player.completed.tools ? 175 : 100;
-    const y3 = player.completed.ethics ? 175 : 100;
-    const x4 = player.completed.mission ? 25 : 100;
-    const poly = document.getElementById("radarPoly");
-    if (poly) poly.setAttribute("points", `100,${y1} ${x2},100 100,${y3} ${x4},100`);
-}
+    // Draw Forward Propagation Signal
+    if (this.isPulsing) {
+      this.pulseProgress += 0.035;
+      const curLayer = Math.floor(this.pulseProgress * 2);
+      const subProg = (this.pulseProgress * 2) - curLayer;
+      if (curLayer < 2) {
+        this.nodes.filter(n => n.layer === curLayer).forEach(src => {
+          this.nodes.filter(n => n.layer === curLayer + 1).forEach(dst => {
+            const px = src.x + (dst.x - src.x) * subProg;
+            const py = src.y + (dst.y - src.y) * subProg;
+            this.ctx.beginPath();
+            this.ctx.arc(px, py, 3, 0, Math.PI * 2);
+            this.ctx.fillStyle = "#38bdf8";
+            this.ctx.fill();
+          });
+        });
+      } else {
+        this.isPulsing = false;
+        document.getElementById("pulseText").textContent = "Forward propagation verified.";
+      }
+    }
 
-function openCertificate() {
-    playSfx("levelUp");
-    document.getElementById("diplomaDate").textContent = "Issued: " + new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
-    document.getElementById("certModal").classList.add("active");
-}
+    // Draw Nodes
+    this.nodes.forEach(n => {
+      this.ctx.beginPath();
+      this.ctx.arc(n.x, n.y, 7, 0, Math.PI * 2);
+      this.ctx.fillStyle = n.layer === 0 ? "#3b82f6" : n.layer === 1 ? "#a855f7" : "#059669";
+      this.ctx.fill();
+      this.ctx.fillStyle = "#ffffff";
+      this.ctx.font = "9px monospace";
+      this.ctx.fillText(n.label, n.x - 5, n.y - 10);
+    });
 
-function closeCertificate() {
-    document.getElementById("certModal").classList.remove("active");
-}
+    requestAnimationFrame(() => this.animate());
+  }
+};
 
-/* ================= 9. INITIALIZATION ================= */
+// ================= ATTENTION MATRIX HEATMAP =================
+const attentionHeatmap = {
+  words: ["The", "neural", "model", "analyzes", "scholarly", "text"],
+  weights: [
+    [0.85, 0.45, 0.30, 0.15, 0.05, 0.10],
+    [0.20, 0.90, 0.65, 0.25, 0.10, 0.15],
+    [0.15, 0.70, 0.95, 0.40, 0.15, 0.20],
+    [0.10, 0.30, 0.45, 0.92, 0.35, 0.50],
+    [0.05, 0.15, 0.20, 0.40, 0.88, 0.75],
+    [0.10, 0.20, 0.25, 0.60, 0.80, 0.94]
+  ],
+
+  init() {
+    const bar = document.getElementById("tokenSentenceBar");
+    if (!bar) return;
+    bar.innerHTML = "";
+    this.words.forEach((w, i) => {
+      const span = document.createElement("span");
+      span.className = "token" + (i === 0 ? " active" : "");
+      span.textContent = w;
+      span.addEventListener("mouseenter", () => this.hoverWord(i));
+      bar.appendChild(span);
+    });
+    this.hoverWord(0);
+  },
+
+  hoverWord(idx) {
+    document.querySelectorAll(".token").forEach((t, i) => t.classList.toggle("active", i === idx));
+    const grid = document.getElementById("heatmapGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    this.weights[idx].forEach(w => {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.style.backgroundColor = `rgba(2, 132, 199, ${w * 0.85})`;
+      cell.style.color = w > 0.4 ? "#ffffff" : "var(--text-main)";
+      cell.textContent = w.toFixed(2);
+      grid.appendChild(cell);
+    });
+  }
+};
+
+// ================= INITIALIZATION & DOM BINDINGS =================
 window.addEventListener("DOMContentLoaded", () => {
-    loadState();
-    updateUI();
-    runTokenizer();
-    simulateFairness();
-    inspectNode("mha");
-    inspectEthics("socratic");
-    if (ctx) drawCanvas();
+  app.load();
+  app.syncUI();
+
+  // Render Checkpoints
+  app.quizData.forEach((item, qIdx) => {
+    const titleEl = document.getElementById("quiz-q-" + qIdx);
+    const optsContainer = document.getElementById("quiz-opts-" + qIdx);
+    if (titleEl) titleEl.textContent = item.q;
+    if (optsContainer) {
+      optsContainer.innerHTML = "";
+      item.opts.forEach((optText, optIdx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "choice-btn";
+        btn.textContent = optText;
+        btn.onclick = () => app.answerQuiz(qIdx, optIdx, btn);
+        optsContainer.appendChild(btn);
+      });
+    }
+  });
+
+  // Initialize Labs and Interactive Graphics
+  app.updateTokens();
+  app.evaluatePrompt();
+  app.updateBias();
+  attentionHeatmap.init();
+  bgSimulation.init();
+  neuralNetwork.init();
 });
