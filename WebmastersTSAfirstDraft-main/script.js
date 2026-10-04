@@ -1,11 +1,4 @@
-/* =====================================================
-   NEXUS AI - CLEAN INTERMEDIATE CLIENT RUNTIME
-   Object-Oriented Canvas Simulation & Structured State
-   ===================================================== */
-
-// Core Application Engine
 const app = {
-  // State Persistence (TSA Rule C: Zero Accounts / Zero Passwords)
   state: {
     xp: 0,
     level: 1,
@@ -13,7 +6,6 @@ const app = {
     cores: [false, false, false, false]
   },
 
-  // Checkpoints Dataset
   quizData: [
     {
       q: "Checkpoint 1: Why do modern Transformers outperform older Recurrent Neural Networks (RNNs) on long text?",
@@ -57,26 +49,23 @@ const app = {
     }
   ],
 
-  // Load from Browser Storage
   load() {
     try {
-      const saved = localStorage.getItem("nexus_ai_intermediate_v1");
+      const saved = localStorage.getItem("nexus_ai_intermediate_v2");
       if (saved) this.state = JSON.parse(saved);
     } catch (e) {
       console.warn("Storage fallback initiated", e);
     }
   },
 
-  // Save to Browser Storage
   save() {
     try {
-      localStorage.setItem("nexus_ai_intermediate_v1", JSON.stringify(this.state));
+      localStorage.setItem("nexus_ai_intermediate_v2", JSON.stringify(this.state));
     } catch (e) {
       console.warn("Storage write failure", e);
     }
   },
 
-  // SPA Navigation
   navigate(tabName) {
     document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
@@ -90,7 +79,6 @@ const app = {
     window.scrollTo({ top: 0, behavior: "smooth" });
   },
 
-  // Collect Floating Cores
   collectCore(idx) {
     if (this.state.cores[idx]) return;
 
@@ -112,7 +100,6 @@ const app = {
     }
   },
 
-  // Check Quiz Answer
   answerQuiz(quizIdx, choiceIdx, btnElement) {
     const data = this.quizData[quizIdx];
     const container = document.getElementById("quiz-opts-" + quizIdx);
@@ -139,7 +126,6 @@ const app = {
     }
   },
 
-  // Sync HUD and Dashboard UI
   syncUI() {
     this.state.level = this.state.xp >= 750 ? 4 : this.state.xp >= 500 ? 3 : this.state.xp >= 250 ? 2 : 1;
 
@@ -173,7 +159,6 @@ const app = {
     if (cert) cert.style.display = this.state.xp >= 1000 ? "flex" : "none";
   },
 
-  // Judge Bypass Shortcut
   judgeUnlock() {
     this.state = { xp: 1000, level: 4, completed: [true, true, true, true], cores: [true, true, true, true] };
     this.save();
@@ -181,7 +166,6 @@ const app = {
     alert("⚡ Judge Mode Activated: 1,000 XP granted, all badges unlocked, diploma verified.");
   },
 
-  // Reset Progress
   reset() {
     if (confirm("Reset local player progress back to Level 1?")) {
       this.state = { xp: 0, level: 1, completed: [false, false, false, false], cores: [false, false, false, false] };
@@ -190,7 +174,6 @@ const app = {
     }
   },
 
-  // Tokenizer Lab
   updateTokens() {
     const input = document.getElementById("tokInput");
     const text = input ? input.value.trim() : "";
@@ -211,7 +194,6 @@ const app = {
     }
   },
 
-  // C.R.A.F.T. Prompt Evaluator
   evaluatePrompt() {
     const input = document.getElementById("craftInput");
     const val = input ? input.value.toLowerCase() : "";
@@ -230,11 +212,10 @@ const app = {
     const score = [c, r, a, f, t].filter(Boolean).length * 20;
     document.getElementById("craftScore").textContent = score + "%";
     const hint = document.getElementById("craftHint");
-    hint.textContent = score === 100 ? "✓ Exemplary: All 5 C.R.A.F.T. parameters detected[span_98](start_span)[span_98](end_span)[span_99](start_span)[span_99](end_span)." : "Add missing parameters (e.g., Role or Format)[span_100](start_span)[span_100](end_span)[span_101](start_span)[span_101](end_span).";
+    hint.textContent = score === 100 ? "✓ Exemplary: All 5 C.R.A.F.T. parameters detected." : "Add missing parameters (e.g., Role or Format).";
     hint.style.color = score === 100 ? "var(--green)" : "var(--blue)";
   },
 
-  // Fairness Simulator
   updateBias() {
     const slider = document.getElementById("biasSlider");
     const val = parseInt(slider.value);
@@ -257,42 +238,41 @@ const app = {
     if (diff <= 12) {
       badge.textContent = "Status: Balanced";
       badge.style.color = "var(--green)";
-      hint.textContent = "Balanced distribution: model outputs achieve demographic parity under the 80% rule[span_102](start_span)[span_102](end_span)[span_103](start_span)[span_103](end_span).";
+      hint.textContent = "Balanced distribution: model outputs achieve demographic parity under the 80% rule.";
     } else {
       badge.textContent = "Status: Skewed";
       badge.style.color = "var(--red)";
-      hint.textContent = `Alert: ${diff}% disparity. The underrepresented cohort receives higher false rejections[span_104](start_span)[span_104](end_span)[span_105](start_span)[span_105](end_span).`;
+      hint.textContent = `Alert: ${diff}% disparity. The underrepresented cohort receives higher false rejections.`;
     }
   },
 
-  // Inspectable Transformer Pipeline
   inspectNode(key) {
     const data = {
       embed: {
         t: "1. Input & Positional Embeddings",
         m: "E = TokenEmbedding(x) + PositionalEncoding(pos)",
-        d: "Maps tokens to 512-dimensional continuous vectors and injects sinusoidal waveforms to track word order[span_106](start_span)[span_106](end_span)[span_107](start_span)[span_107](end_span).",
+        d: "Maps tokens to 512-dimensional continuous vectors and injects sinusoidal waveforms to track word order.",
         in: "[Batch, Sequence]",
         out: "[Batch, Sequence, 512]"
       },
       mha: {
         t: "2. Multi-Head Self-Attention",
         m: "Attention(Q,K,V) = softmax((Q*K^T)/√d_k)*V",
-        d: "Computes dot-product affinity matrices between every word pair in parallel, tracking sentence context[span_108](start_span)[span_108](end_span)[span_109](start_span)[span_109](end_span).",
+        d: "Computes dot-product affinity matrices between every word pair in parallel, tracking sentence context.",
         in: "[Batch, Sequence, 512]",
         out: "[Batch, Sequence, 512]"
       },
       norm: {
         t: "3. Residual Add & Layer Normalization",
         m: "Output = LayerNorm(x + Sublayer(x))",
-        d: "Skip-connections pass identity gradients directly around sublayers, preventing vanishing gradients[span_110](start_span)[span_110](end_span)[span_111](start_span)[span_111](end_span).",
+        d: "Skip-connections pass identity gradients directly around sublayers, preventing vanishing gradients.",
         in: "[Batch, Sequence, 512]",
         out: "[Batch, Sequence, 512]"
       },
       ffn: {
         t: "4. Feed-Forward Neural Network",
         m: "FFN(x) = max(0, x*W1 + b1)*W2 + b2",
-        d: "Applies two dense linear transformations with GELU activation to expand features into 2,048 dimensions[span_112](start_span)[span_112](end_span)[span_113](start_span)[span_113](end_span).",
+        d: "Applies two dense linear transformations with GELU activation to expand features into 2,048 dimensions.",
         in: "[Batch, Sequence, 512]",
         out: "[Batch, Sequence, 2048]"
       }
@@ -306,7 +286,6 @@ const app = {
     document.getElementById("hudOut").textContent = node.out;
   },
 
-  // Pulse Neural Network Animation
   pulseNet() {
     neuralNetwork.isPulsing = true;
     neuralNetwork.pulseProgress = 0;
@@ -314,7 +293,6 @@ const app = {
   }
 };
 
-// ================= PARTICLE PHYSICS BACKGROUND SIMULATION =================
 class Particle {
   constructor(canvasWidth, canvasHeight) {
     this.x = Math.random() * canvasWidth;
@@ -331,7 +309,6 @@ class Particle {
     if (this.x < 0 || this.x > width) this.vx *= -1;
     if (this.y < 0 || this.y > height) this.vy *= -1;
 
-    // Repulsion from cursor
     if (mouse.x !== null) {
       const dx = mouse.x - this.x;
       const dy = mouse.y - this.y;
@@ -382,7 +359,6 @@ const bgSimulation = {
       p.update(this.canvas.width, this.canvas.height, this.mouse);
       p.draw(this.ctx);
 
-      // Synaptic proximity lines
       for (let j = i + 1; j < this.particles.length; j++) {
         const p2 = this.particles[j];
         const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
@@ -400,7 +376,6 @@ const bgSimulation = {
   }
 };
 
-// ================= HERO DRAGGABLE NEURAL PLAYGROUND =================
 const neuralNetwork = {
   canvas: document.getElementById("neuralCanvas"),
   ctx: null,
@@ -443,7 +418,6 @@ const neuralNetwork = {
   animate() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Draw Synaptic Connections
     for (let i = 0; i < this.nodes.length; i++) {
       for (let j = 0; j < this.nodes.length; j++) {
         if (this.nodes[j].layer === this.nodes[i].layer + 1) {
@@ -457,7 +431,6 @@ const neuralNetwork = {
       }
     }
 
-    // Draw Forward Propagation Signal
     if (this.isPulsing) {
       this.pulseProgress += 0.035;
       const curLayer = Math.floor(this.pulseProgress * 2);
@@ -479,7 +452,6 @@ const neuralNetwork = {
       }
     }
 
-    // Draw Nodes
     this.nodes.forEach(n => {
       this.ctx.beginPath();
       this.ctx.arc(n.x, n.y, 7, 0, Math.PI * 2);
@@ -494,7 +466,6 @@ const neuralNetwork = {
   }
 };
 
-// ================= ATTENTION MATRIX HEATMAP =================
 const attentionHeatmap = {
   words: ["The", "neural", "model", "analyzes", "scholarly", "text"],
   weights: [
@@ -536,12 +507,10 @@ const attentionHeatmap = {
   }
 };
 
-// ================= INITIALIZATION & DOM BINDINGS =================
 window.addEventListener("DOMContentLoaded", () => {
   app.load();
   app.syncUI();
 
-  // Render Checkpoints
   app.quizData.forEach((item, qIdx) => {
     const titleEl = document.getElementById("quiz-q-" + qIdx);
     const optsContainer = document.getElementById("quiz-opts-" + qIdx);
@@ -559,7 +528,6 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Initialize Labs and Interactive Graphics
   app.updateTokens();
   app.evaluatePrompt();
   app.updateBias();
